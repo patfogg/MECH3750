@@ -1,0 +1,419 @@
+\documentclass[12pt]{article}
+
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{comment}
+\usepackage{tikz}
+\usepackage{xcolor}
+%\usepackage{enumitem}
+\usepackage{enumerate}
+
+\usepackage{natbib}
+\bibliographystyle{plain}
+\usepackage{caption}
+
+\setlength{\parindent}{0pt}
+\usepackage[margin=3cm]{geometry}
+
+%\renewcommand{\myvecf}{\underline{\mathbf{f}}}
+\newcommand{\myvec}[1]{\underline{\mathbf{#1}}}
+%\renewenvironment{thebibliogrpahy}[1]{\subsubsection*{\refname}}
+\makeatletter
+\renewcommand{\@seccntformat}[1]{}
+\makeatother
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\dotp}{\boldsymbol{\cdot}}
+\newcommand{\inp}[2]{\langle #1, #2 \rangle}
+\newcommand{\Soln}[1]{{\color{blue} \textbf{Solution}: \\ #1 }}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+
+%% For typesetting code listings
+\usepackage{listings}
+\lstset{backgroundcolor=\color{blue!5}}
+\lstdefinelanguage{Sage}[]{Python}
+{morekeywords={False,True},sensitive=true}
+\lstset{
+  emph={sage},
+  emphstyle=\color{blue},
+  emph={[2]self},
+  emphstyle={[2]\color{brown}},
+  frame=none,
+  showtabs=False,
+  showspaces=False,
+  showstringspaces=False,
+  commentstyle={\ttfamily\color{olive}},
+  keywordstyle={\ttfamily\color{purple}\bfseries},
+  stringstyle={\ttfamily\color{orange}\bfseries},
+  language=Sage,
+  basicstyle={\footnotesize\ttfamily},%\singlespacing
+  aboveskip=0.0em,
+  belowskip=.1in,
+  xleftmargin=.1in,
+  xrightmargin=.1in,
+}
+
+\definecolor{dblackcolor}{rgb}{0.0,0.0,0.0}
+\definecolor{dbluecolor}{rgb}{0.01,0.02,0.7}
+\definecolor{dgreencolor}{rgb}{0.2,0.4,0.0}
+\definecolor{dgraycolor}{rgb}{0.30,0.3,0.30}
+\newcommand{\dblue}{\color{dbluecolor}\bf}
+\newcommand{\dred}{\color{dredcolor}\bf}
+\newcommand{\dblack}{\color{dblackcolor}\bf}
+
+
+% Dark red emphasis
+\definecolor{darkred}{rgb}{0.7,0,0} % darkred color
+\newcommand{\defn}[1]{{\color{darkred}\emph{#1}}} % emphasis of a definition 
+
+%\definecolor{darkblue}{rgb}{0,0,0.7} % darkblue color
+
+
+%\usepackage[utf8]{inputenc}
+
+\begin{document}
+{\Huge \begin{center}  MECH3750: Engineering Analysis II \end{center}}
+
+\vspace{4mm}
+
+{\Large \begin{center} Assignment I \end{center}}
+
+\vspace{4mm}
+
+\section{\fontsize{14}{14}\selectfont Aim}
+The aim of this assignment is to synthesise your understanding of numerical approximations using finite differences and Taylor series, data modelling with least squares techniques, and signal analysis with Fourier series. Your solutions are to be implemented in \textsc{Python} and formally documented in a report.
+
+\section{\fontsize{14}{14}\selectfont Learning Objectives}
+This assignment supports the following learning objectives, as listed in the Electronic Course Profile:
+
+\begin{itemize}
+    
+    \item
+    [1.1] Understand which types of mathematical model are appropriate for different systems.
+    
+    \item
+    [1.2] Model systems using algebraic equations, ordinary differential equations, partial differential equations and integral equations.
+    
+    %\item
+    %[1.3] Construct system models based on rough descriptions of mechanical engineering situations or problems.
+    
+    \item
+    [2.1] Consider general approximation methods using abstract spaces and Fourier expansions.
+    
+    \item
+    [2.2] Use general methods enabling simplified and approximate solutions of complex problems.
+    
+    \item
+    [3.1] Interpret the results of analysis in terms of the behaviour of the physical system it models.
+    
+    \item
+    [3.2] Analytically predict and evaluate the performance of numerical analysis in terms of convergence and efficiency.
+    
+    \item
+    [3.3] Report on the results of analysis in a required format.
+    
+    \item
+    [4.3] Apply new techniques to engineering applications by implementing them in \textsc{Python} programs.
+    
+\end{itemize}
+
+\newpage
+
+\clearpage
+\setcounter{page}{2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Question 1 %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\fontsize{14}{14}\selectfont Question 1 [15 marks]}
+
+This question investigates a nonstandard inner product on $\RR^2$ that arises in quantum mechanics (and other areas of mathematics), which comes from looking at reflections of a triangle. The goal of this problem is to show that
+\[
+\inp{v}{w} = \inp{(v_1, v_2)}{(w_1,w_2)} =
+\begin{bmatrix}
+v_1 & v_2
+\end{bmatrix}
+\begin{bmatrix}
+2 & -1 \\ -1 & 2
+\end{bmatrix}
+\begin{bmatrix}
+w_1 \\ w_2
+\end{bmatrix}
+\]
+is an inner product on $\RR^2$ and to compute an orthogonal basis.
+
+\medskip
+
+\begin{enumerate}[a.]
+\item (5 marks) Show that $\inp{v}{w} = \inp{w}{v}$.
+
+\item (7 marks) Show that $\inp{v}{v} \geq 0$ and that $\inp{v}{v} = 0$ if and only if $v = 0$.
+
+\item (3 marks) Find a vector orthogonal to $e_1 = (1,0)$ with respect to this inner product.
+\end{enumerate}
+
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Question 2 %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\fontsize{14}{14}\selectfont Question 2 [15 marks]}
+
+Newton's method is a commonly used technique for finding solutions to systems of equations and minimisation problems (which is just finding the root for all partial derivatives). These problems appear in many areas where various constraints need to be satisfied or an equilibrium needs to be found, but the setup is too complicated to solve analytically.
+
+\medskip
+
+For this problem, we consider the two equations
+\begin{align*}
+x^3 + y^2 & = 1,
+\\ x^2 + y^2 & = 4.
+\end{align*}
+\begin{enumerate}[a.]
+\item (10 marks) Write a program that uses Newton's method to find a solution to the system of equations up to a tolerance of $\epsilon = 10^{-6}$ with an initial guess of $(-1,1)$. Write your solution with at least five decimal places.
+
+\item (5 marks) Write a program to plot the two equations and your solution from part~(a) on the same plot for $x \in [-4, 3]$ and $y \in [-9,9]$.
+\end{enumerate}
+
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Question 3 %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\fontsize{14}{14}\selectfont Question 3 [20 marks]}
+
+This question compares the central difference and forward difference for estimating a derivative. The ability to estimate derivatives is very useful for processing data and solving differential equations (which will be demonstrated later in the course). Understanding the accuracy of a numerical solution requires an understanding of the error. Here, this will be done by working with the function $f(x) = e^x$.
+
+\begin{enumerate}[a.]
+\item (10 marks) Write a program to compute (for at least five decimal places) the table
+\[
+\begin{array}{|c|c|c|c|c|}
+\hline
+h & f_F' \text{ approx} & |E_F(h)| & f'_C \text{ approx} & |E_C(h)| \\ \hline
+0.01 &&&& \\
+0.02 &&&& \\
+0.05 &&&& \\
+0.10 &&&& \\ \hline
+\end{array}
+\]
+where $f'_F$ and $f'_C$ are computed using the forward and central difference approximations, respectively, and $E_F(h)$ and $E_C(h)$) are their respective errors for $x = 1$.
+
+\item (10 marks) Plot $\log |E_F|$ and $\log |E_C|$ versus $\log h$ with appropriate labels. Compute the slopes and explain why this validates that the error should be on the order of $O(h)$ and $O(h^2)$ for the forward and central differences, respectively.
+\end{enumerate}
+
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Question 4 %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\fontsize{14}{14}\selectfont Question 4 [10 marks]}
+
+Spherical harmonics arise from studying the Laplace equation $\nabla^2 f = 0$ in terms of spherical coordinates $(r, \theta, \phi) \in [0, \infty) \times [0, \pi] \times [0, 2\pi]$ once the radial portion has been factored out. Solutions form a nice basis for estimating integrals over a sphere by performing a computation similar to least-squares, and this technique is used in real-time rendering of shading and shadowing in computer graphics with dynamically changing lighting. Spherical harmonics also arise in the study of the hydrogen atom in quantum mechanics.
+
+\medskip
+
+To construct the spherical harmonics, one needs to solve the PDE
+\[
+\frac{1}{Y \sin \theta} \frac{\partial}{\partial \theta} \left( \sin \theta \frac{\partial Y}{\partial \theta} \right) + \frac{1}{Y \sin^2 \theta} \frac{\partial^2 Y}{\partial \phi^2} = -\lambda
+\]
+for some constant $\lambda$ (this constant $\lambda$ comes from separation of variables for the radial direction) and find $Y(\theta, \phi)$. Note that $Y(\theta, 0) = Y(\theta, 2\pi)$.
+Show that this equation is separable with $Y(\theta, \phi) = \Theta(\theta) (C_1 e^{im\phi} + C_2 e^{-im\phi})$ for some function $\Theta(\theta)$, integer $m$, and (complex) constants $C_1, C_2$.
+
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Question 5 %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\fontsize{14}{14}\selectfont Question 5 [25 marks]}
+
+Fourier series are very useful in finding and estimating a particular solution to ODEs because they generate simple identities with taking derivatives. This includes systems of coupled ODEs, such as measuring solute density as a solution flows between two tanks.
+
+\begin{enumerate}[a.]
+\item (5 marks) Let $C$ be a real constant, and let $f(x) = \sum_{k=-\infty}^{\infty} d_k e^{ikx}$. Show that for
+\[
+y(x) = \sum_{k=-\infty}^{\infty} c_k e^{ikx}
+\]
+to be a solution to the ODE, $y' + C y = f(x)$, we must have
+\[
+c_k = \frac{d_k}{ik + C}
+\]
+for all $k$.
+
+\item (10 marks) Now consider the coupled system of equations
+\begin{align*}
+y_1' + 3y_2'' + 5 y_1 - y_2 & = f_1(x),
+\\
+y_2' + y_1 + y_2 & = f_2(x).
+\end{align*}
+We wish to find a solution using Fourier series
+\[
+y_m(x) = \sum_{k=-\infty}^{\infty} c_k^{(m)} e^{ikx},
+\]
+for $m = 1,2$.
+Suppose we have the Fourier series
+\[
+f_1(x) = \sum_{k=-\infty}^{\infty} d_k^{(1)} e^{ikx},
+\qquad\qquad
+f_2(x) = \sum_{k=-\infty}^{\infty} d_k^{(2)} e^{ikx}.
+\]
+Show that for all $k$ we must have
+\begin{align*}
+(ik + 5) c_k^{(1)} + (-3k^2 - 1) c_k^{(2)} & = d_k^{(1)},
+\\
+c_k^{(1)} + (ik + 1) c_k^{(2)} & = d_k^{(2)},
+\end{align*}
+and that
+\[
+c_k^{(1)} = \frac{(ik+1) d_k^{(1)} + (3k^2 + 1)d_k^{(2)}}{6+2k^2 + 6ik},
+\qquad\qquad
+c_k^{(2)} = \frac{-d_k^{(1)} + (ik+5) d_k^{(2)}}{6+2k^2 + 6ik}.
+\]
+
+\item (10 marks) We know the Fourier series on the interval $[-\pi, \pi]$ for the functions
+\begin{align*}
+f_1(x) & = x + 2x^2 = \frac{2\pi^2}{3} + \sum_{k=1}^{\infty} i \frac{(-1)^k}{k} (e^{ikx} - e^{-ikx}) + 4 \frac{(-1)^k}{k^2} (e^{ikx} + e^{-ikx}),
+\\ f_2(x) & = 3x =  3i \sum_{k=1}^{\infty} \frac{(-1)^k}{k} (e^{ikx} - e^{-ikx}).
+\end{align*}
+Plot the approximate solutions
+\[
+y_1(x) = \sum_{k=-5}^5 c_k^{(1)} e^{ikx},
+\qquad\qquad
+y_2(x) = \sum_{k=-5}^5 c_k^{(2)} e^{ikx},
+\]
+to the system of equations from Part~(b) using the given $f_1(x)$ and $f_2(x)$.
+\end{enumerate}
+
+
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% Question 6 %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\fontsize{14}{14}\selectfont Question 6 [40 marks]}
+
+We have seen the (discrete) Fourier transform as a way to determine what frequencies are appearing in a given signal, but it does not tell us any temporal information. For instance, we have an audio track of someone speaking, they are giving different frequencies at different times rather than making just one sound. This can be used to determine when a machine requires maintenance by detecting a change in the operating sound.
+Other applications can include image processing and data compression.
+We will examine a technique called \defn{wavelets} in this problem and its relation to the DFT.
+
+\medskip
+
+A wavelet will depend on two parameters: a frequency $n = 1, 2, 3, \ldots$ and shift $0 \leq k < 2^{n-1}$. We will consider a common wavelet called the \defn{Haar wavelet}:
+\[
+\psi_{n,k}(x) = \begin{cases}
+1 & \text{if } x \in [k/2^{n-1},  (k+\frac{1}{2})/2^{n-1}), \\
+-1 & \text{if } x \in [(k+\frac{1}{2})/2^{n-1}, (k+1)/2^{n-1}), \\
+0 & \text{otherwise,}
+\end{cases}
+\]
+with a special exception of $\psi_{0,0}(x) = 1$. So each wavelet is only one period of a square wave. For example, $\psi_{3,2}$ is as shown in the figure:
+\[
+\begin{tikzpicture}
+\draw[->] (-1.2, 0) -- (9,0);
+\draw[->] (0, -1.5) -- (0, 1.5);
+\foreach \x in {-1,0,1,...,8}
+  \draw[-] (\x, .1) -- (\x, -.1);
+\foreach \y in {-1, 1}
+  \draw[-] (.1, \y) -- (-.1, \y) node[anchor=east] {\tiny $\y$};
+\draw (8,-.2) node[anchor=north] {\tiny $1$};
+\draw (4,-.2) node[anchor=north] {\tiny $1/2$};
+\draw[-,very thick,red] (-1.2,0) -- (4,0);
+\draw[-,very thick,red] (4,1) -- (5,1);
+\draw[-,very thick,red] (5,-1) -- (6,-1);
+\draw[-,very thick,red] (6,0) -- (9,0);
+\draw[dashed,red] (4,0) -- (4,1);
+\draw[dashed,red] (5,1) -- (5,-1);
+\draw[dashed,red] (6,-1) -- (6,0);
+\end{tikzpicture}
+\]
+
+\begin{enumerate}[a.]
+\item (10 marks) Show that the Haar wavelets are orthogonal, so for $(n,k) \neq (m,j)$:
+\[
+\inp{\psi_{n,k}}{\psi_{m,j}} = \int_0^1 \psi_{n,k}(x) \psi_{m,j}(x) \, dx = 0.
+\]
+
+\item (30 marks) Now we look at a discrete version of the Haar transform. We build the discrete Haar transform matrix on $N = 2^n$ points inductively by starting with $H_2 = \begin{bmatrix} 1 & 1 \\ 1 & -1 \end{bmatrix}$ and
+\begin{gather*}
+H_{2N} = \begin{bmatrix}
+H_N \otimes \begin{bmatrix} 1 & 1 \end{bmatrix} \\
+I_N \otimes \begin{bmatrix} 1 & -1 \end{bmatrix}
+\end{bmatrix},
+\qquad \text{ where }
+\\
+A \otimes \begin{bmatrix} 1 & \pm 1 \end{bmatrix} = \begin{bmatrix}
+a_{11} & \pm a_{11} & a_{12} & \pm a_{12} & \cdots & a_{1N} & \pm a_{1N} \\
+a_{21} & \pm a_{21} & a_{22} & \pm a_{22} & \cdots & a_{2N} & \pm a_{2N} \\
+\vdots & \vdots & \vdots & \ddots & \ddots & \vdots & \vdots \\
+a_{N1} & \pm a_{N1} & a_{N2} & \pm a_{N2} & \cdots & a_{NN} & \pm a_{NN}
+\end{bmatrix}
+\end{gather*}
+with $A = (a_{ij})_{i,j=1}^N$ and $I_N$ being the $N \times N$ identity matrix (this is called the Kronecker product of two matrices). For example, the discrete Haar transform matrix on $N = 2^3 = 8$ data points is
+\[
+H_8 = 
+\begin{bmatrix}
+1&1&1&1&1&1&1&1 \\
+1&1&1&1&-1&-1&-1&-1 \\
+1&1&-1&-1&0&0&0&0 \\
+0&0&0&0&1&1&-1&-1 \\
+1&-1&0&0&0&0&0&0 \\
+0&0&1&-1&0&0&0&0 \\
+0&0&0&0&1&-1&0&0 \\
+0&0&0&0&0&0&1&-1
+\end{bmatrix}.
+\]
+The discrete Haar transform $\mathbf{a} = (a_0, \dotsc, a_{N-1})$ of a signal $\mathbf{f} = (f_0, \ldots, f_{N-1})$ is given by the normal equations
+\[
+N \mathbf{a} = H_N \mathbf{f}.
+\]
+
+\medskip
+
+Write a program to plot the function
+\[
+f(x) = \sin(6x) e^x + 300 \cos(4x) e^{-x}
+\]
+and also plot the corresponding discrete Haar transform, $\mathbf{a}$, and the real and imaginary parts of the DFT, $\mathbf{c} = (c_0, \dotsc, c_{N-1})$, using $N = 2^8 = 256$ and data points $f_m = f(x_m)$, where $x_m = \frac{2\pi m}{N}$ for $m = 0,1,\ldots,N-1$.
+
+\smallskip
+The plots for the discrete Haar transform and DFT should be the index on one axis and the value on the other given as a line plot.
+The plot of the Haar transform should also indicate with dotted vertical lines in a different colour than the main plot line.
+The DFT real and imaginary parts should be on the plot with the imaginary part being a dashed line.
+
+\smallskip
+(Side note: We can think of using a rescaled version of the Haar wavelet to work on the interval $[0, 2\pi]$.)
+\end{enumerate}
+
+
+\clearpage
+
+\section{\fontsize{14}{14}\selectfont The Report}
+Document your work in a formal report that includes, but is not necessarily limited to, the following for each question:
+
+\begin{enumerate}[i.]
+    
+    \item 
+    Introduction: A brief description of the problem you have been asked to solve;
+    
+    \item
+    Methodology: The definition of your approach to solving this problem, including all working and relevant assumptions;
+    
+    \item
+    Results: The appropriate presentation of results, which might include figures, graphs and tables;
+    
+    \item
+    Concluding Remarks: A critical discussion of your approach to the problem and your findings, ensuring you address any specific issues raised in the question sheet.
+    
+\end{enumerate}
+
+\section{\fontsize{14}{14}\selectfont Submission}
+You will be required to submit your report and your code. It is expected that your code will be neatly structured and well documented so that it can be run and interrogated during the marking process. A Turnitin submission link for the report will be made available on Blackboard. Your code should be collated as a single \textsc{Python} script that contains a function for each question (e.g. \texttt{def Q1(...):}), and submitted via a push to the MECH3750 GitHub Classroom. The due date and time applies to both the report and your code (\textit{i.e.}\ if either is late, then your submission is late).
+
+\end{document} 
